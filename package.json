@@ -1,0 +1,23 @@
+{
+  "name": "http_to_mqtt",
+  "version": "1.0.0",
+  "description": "HTTP to MQTT bridge",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "4.13.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/petkov/http_to_mqtt.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/petkov/http_to_mqtt/issues"
+  },
+  "homepage": "https://github.com/petkov/http_to_mqtt#readme"
+}

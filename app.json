@@ -1,0 +1,8 @@
+{
+  "name": "HTTP to MQTT bridge",
+  "description": "HTTP to MQTT bridge running on Node.js app using Express 4",
+  "repository": "https://github.com/petkov/http_to_mqtt",
+  "logo": "http://node-js-sample.herokuapp.com/node.svg",
+  "keywords": ["node", "express", "http", "mqtt"],
+  "image": "heroku/nodejs"
+}
