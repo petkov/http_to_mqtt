@@ -1,7 +1,7 @@
 var mqtt_host = process.env.MQTT_HOST || '';
 var mqtt_user = process.env.MQTT_USER || '';
 var mqtt_pass = process.env.MQTT_PASS || '';
-var http_port = process.env.HTTP_PORT || 5000;
+var http_port = process.env.PORT || 5000;
 
 var express = require('express');
 var app = express();
