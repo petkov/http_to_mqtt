@@ -3,9 +3,12 @@ var mqtt_user = process.env.MQTT_USER || '';
 var mqtt_pass = process.env.MQTT_PASS || '';
 var http_port = process.env.PORT || 5000;
 
-var express = require('express');
-var app = express();
 var mqtt = require('mqtt');
+var express = require('express');
+var bodyParser = require('body-parser');
+
+var app = express();
+
 var client  = mqtt.connect(mqtt_host, {
   clientId: 'test',
   username: mqtt_user,
@@ -13,10 +16,15 @@ var client  = mqtt.connect(mqtt_host, {
 });
 
 app.set('port', http_port);
+app.use(bodyParser.json());
 
-app.get('/post/:topic/:content', function(req, res) {
-  res.send('topic:' + req.params['topic'] + ';content:' + req.params['content']);
-  client.publish(req.params['topic'], req.params['content']);
+app.post('/post/', function(req, res) {
+  if (req.body['topic']) {
+    client.publish(req.body['topic'], req.body['message']);
+    res.send('ok');
+  } else {
+    res.send('error');
+  }
 });
 
 app.listen(app.get('port'), function() {
