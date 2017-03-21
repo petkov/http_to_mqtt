@@ -40,4 +40,4 @@ jspm_packages
 .env
 
 # Mac files
-DS_Store
+.DS_Store
