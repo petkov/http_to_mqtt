@@ -38,3 +38,6 @@ jspm_packages
 
 # Heroku environment
 .env
+
+# Mac files
+DS_Store
