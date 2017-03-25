@@ -19,6 +19,10 @@ var client  = mqtt.connect(mqtt_host, {
 app.set('port', http_port);
 app.use(bodyParser.json());
 
+app.get('/status/', function(req, res){
+  res.send('ok');
+});
+
 app.post('/post/', function(req, res) {
   if (!auth_key || req.body['key'] != auth_key) {
     console.log('Request is not authorized.');
