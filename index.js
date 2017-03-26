@@ -5,7 +5,7 @@ var mqtt_pass = process.env.MQTT_PASS || '';
 var http_port = process.env.PORT || 5000;
 var debug_mode = process.env.DEBUG_MODE || false;
 var keep_alive_topic = process.env.KEEP_ALIVE_TOPIC || 'keep_alive';
-var keep_alive_message = process.env.KEEP_ALIVE_message || 'keep_alive';
+var keep_alive_message = process.env.KEEP_ALIVE_MESSAGE || 'keep_alive';
 
 var mqtt = require('mqtt');
 var express = require('express');
