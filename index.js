@@ -3,6 +3,7 @@ var mqtt_host = process.env.MQTT_HOST || '';
 var mqtt_user = process.env.MQTT_USER || '';
 var mqtt_pass = process.env.MQTT_PASS || '';
 var http_port = process.env.PORT || 5000;
+var debug_mode = process.env.DEBUG_MODE || false;
 
 var mqtt = require('mqtt');
 var express = require('express');
@@ -13,8 +14,14 @@ var app = express();
 function logRequest(req) {
   var ip = req.headers['x-forwarded-for'] ||
            req.connection.remoteAddress;
-  console.log('Received request [' + req.originalUrl + 
-              '] from [' + ip + '].');
+  var message = 'Received request [' + req.originalUrl + 
+              '] from [' + ip + ']';
+  if (debug_mode) {
+    message += ' with payload [' + JSON.stringify(req.body) + ']';
+  } else {
+    message += '.';
+  }
+  console.log(message);
 }
 
 var client  = mqtt.connect(mqtt_host, {
