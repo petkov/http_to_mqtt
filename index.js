@@ -10,6 +10,13 @@ var bodyParser = require('body-parser');
 
 var app = express();
 
+function logRequest(req) {
+  var ip = req.headers['x-forwarded-for'] ||
+           req.connection.remoteAddress;
+  console.log('Received request [' + req.originalUrl + 
+              '] from [' + ip + '].');
+}
+
 var client  = mqtt.connect(mqtt_host, {
   clientId: 'test',
   username: mqtt_user,
@@ -19,11 +26,13 @@ var client  = mqtt.connect(mqtt_host, {
 app.set('port', http_port);
 app.use(bodyParser.json());
 
-app.get('/status/', function(req, res){
+app.get('/status/', function(req, res) {
+  logRequest(req);
   res.send('ok');
 });
 
 app.post('/post/', function(req, res) {
+  logRequest(req);
   if (!auth_key || req.body['key'] != auth_key) {
     console.log('Request is not authorized.');
     res.send();
