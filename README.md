@@ -26,18 +26,18 @@ Additionally you can make Heroku to redeploy the latest version of HTTP to MQTT 
 
 ## Improve response time
 
-After 30 minutes of inactivity Heroku will put your app in to sleep mode. This will result in ~10 seconds response time. To prevent Heroku from putting your app in to speep mode ping it every 10 minutes or so. But be carefull. Heroku free quota is 550 hours per month. Without sleeping your app will be allowed to run only 22 days in a month.
+After 30 minutes of inactivity Heroku will put your app in to sleep mode. This will result in ~10 seconds response time. To prevent Heroku from putting your app in to speep mode ping it every 10 minutes or so. You can do that using regular HTTP GET request to http://your_app/keep_alive/. But be carefull. Heroku free quota is 550 hours per month. Without sleeping your app will be allowed to run only 22 days a month. Additionaly keep_alive method will send a simple MQTT message to prevent the broker from sleeping as well. The topic and message can be configured using Heroku environment variables KEEP_ALIVE_TOPIC and KEEP_ALIVE_MESSAGE.
 
 Bellow is an example of automation for HA to ping HTTP to MQTT bridge every 10 minutes during day time. 
 
 ```yaml
-notify:
-  - name: heroku
-    platform: rest
-    resource: https://<your_app>.herokuapp.com/status/
+rest_command:
+  http_to_mqtt_keep_alive:
+    url: https://<your_app_address>/keep_alive/
+    method: get
 
 automation:
-  alias: Prevent Heroku from sleeping
+  alias: HTTP to MQTT keep alive
   trigger:
     platform: time
     minutes: '/10'
@@ -47,7 +47,5 @@ automation:
     after: '7:30:00'
     before: '23:59:59'
   action:
-    service: notify.heroku
-    data:
-      message: "Wakeup!"
+    service: rest_command.http_to_mqtt_keep_alive
 ```
