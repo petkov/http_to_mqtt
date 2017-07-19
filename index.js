@@ -41,6 +41,40 @@ app.get('/keep_alive/', function(req, res) {
   res.send('ok');
 });
 
+app.get('/publish', function (req, res) {
+    logRequest(req);
+
+    var topic = req.query.topic;
+
+    if (!topic) {
+        res.send('error');
+    }
+    else {
+        var message = req.body;
+
+        client.publish(topic, message);
+
+        res.send('ok');
+    }
+});
+
+app.post('/publish', function (req, res) {
+    logRequest(req);
+
+    var topic = req.query.topic;
+
+    if (!topic) {
+        res.send('error');
+    }
+    else {
+        var message = req.body;
+
+        client.publish(topic, message);
+
+        res.send('ok');
+    }
+});
+
 app.post('/post/', function(req, res) {
   logRequest(req);
   if (!auth_key || req.body['key'] != auth_key) {
