@@ -10,6 +10,9 @@ var keep_alive_message = process.env.KEEP_ALIVE_MESSAGE || 'keep_alive';
 var mqtt = require('mqtt');
 var express = require('express');
 var bodyParser = require('body-parser');
+var multer  = require('multer')
+
+var upload = multer({ dest: '/tmp/' });
 
 var app = express();
 
@@ -18,6 +21,7 @@ function logRequest(req) {
            req.connection.remoteAddress;
   var message = 'Received request [' + req.originalUrl + 
               '] from [' + ip + ']';
+
   if (debug_mode) {
     message += ' with payload [' + JSON.stringify(req.body) + ']';
   } else {
@@ -41,7 +45,7 @@ app.get('/keep_alive/', function(req, res) {
   res.send('ok');
 });
 
-app.get('/publish', function (req, res) {
+app.post('/publish', upload.single('thumb'), function (req, res) {
     logRequest(req);
 
     var topic = req.query.topic;
@@ -50,24 +54,7 @@ app.get('/publish', function (req, res) {
         res.send('error');
     }
     else {
-        var message = req.body;
-
-        client.publish(topic, message);
-
-        res.send('ok');
-    }
-});
-
-app.post('/publish', function (req, res) {
-    logRequest(req);
-
-    var topic = req.query.topic;
-
-    if (!topic) {
-        res.send('error');
-    }
-    else {
-        var message = req.body;
+        var message = req.body.payload;
 
         client.publish(topic, message);
 
