@@ -14,7 +14,15 @@ var multer = require('multer')
 
 var app = express();
 
-function logRequest(req) {
+var client = mqtt.connect(mqtt_host, {
+    username: mqtt_user,
+    password: mqtt_pass
+});
+
+app.set('port', http_port);
+app.use(bodyParser.json());
+
+function logRequest(req, res, next) {
     var ip = req.headers['x-forwarded-for'] ||
         req.connection.remoteAddress;
     var message = 'Received request [' + req.originalUrl +
@@ -26,16 +34,9 @@ function logRequest(req) {
         message += '.';
     }
     console.log(message);
+
+    next();
 }
-
-var client = mqtt.connect(mqtt_host, {
-    clientId: 'test',
-    username: mqtt_user,
-    password: mqtt_pass
-});
-
-app.set('port', http_port);
-app.use(bodyParser.json());
 
 function authorizeUser(req, res, next) {
     if (auth_key && req.body['key'] != auth_key) {
@@ -48,40 +49,29 @@ function authorizeUser(req, res, next) {
 }
 
 function checkSingleFileUpload(req, res, next) {
-    console.log('checking for single...')
     if (req.query.single) {
-        console.log('Single == ' + req.query.single)
         var upload = multer().single(req.query.single);
 
         upload(req, res, next);
     }
     else {
-        console.log('No Single')
         next();
     }
 }
 
 function checkMessagePath(req, res, next) {
-    console.log('checking for message path...')
     if (req.query.path) {
-        console.log('Path == ' + req.query.path)
         req.body = req.body[req.query.path];
-    }
-    else {
-        console.log('No Path')
     }
     next();
 }
 
-app.get('/keep_alive/', function (req, res) {
-    logRequest(req);
+app.get('/keep_alive/', logRequest, function (req, res) {
     client.publish(keep_alive_topic, keep_alive_message);
     res.sendStatus(200);
 });
 
-app.post('/publish', authorizeUser, checkSingleFileUpload, checkMessagePath, function (req, res) {
-    logRequest(req);
-
+app.post('/publish', logRequest, authorizeUser, checkSingleFileUpload, checkMessagePath, function (req, res) {
     var topic = req.query.topic;
 
     if (!topic) {
@@ -96,9 +86,7 @@ app.post('/publish', authorizeUser, checkSingleFileUpload, checkMessagePath, fun
     }
 });
 
-app.post('/post/', authorizeUser, function (req, res) {
-    logRequest(req);
-
+app.post('/post/', logRequest, authorizeUser, function (req, res) {
     if (!req.body['topic']) {
         res.status(500).send('Topic not specified');
     }
