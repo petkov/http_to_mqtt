@@ -57,6 +57,18 @@ app.post('/publish', function (req, res, next) {
     }
 });
 
+app.post('/publish', function (req, res, next) {
+    console.log('checking for message path...')
+    if (req.query.path) {
+        console.log('Path == ' + req.query.path)
+        req.body = req.body[req.query.path];
+    }
+    else {
+        console.log('No Path')
+    }
+    next();
+});
+
 app.post('/publish', function (req, res) {
     logRequest(req);
 
@@ -66,7 +78,7 @@ app.post('/publish', function (req, res) {
         res.status(500).send('Topic not specified');
     }
     else {
-        var message = req.body;
+        var message = req.body.payload;
 
         client.publish(topic, message);
 
