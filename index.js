@@ -38,7 +38,7 @@ app.set('port', http_port);
 app.use(bodyParser.json());
 
 function authorizeUser(req, res, next) {
-    if (!auth_key || req.body['key'] != auth_key) {
+    if (auth_key && req.body['key'] != auth_key) {
         console.log('Request is not authorized.');
         res.sendStatus(401);
     }
