@@ -10,74 +10,83 @@ var keep_alive_message = process.env.KEEP_ALIVE_MESSAGE || 'keep_alive';
 var mqtt = require('mqtt');
 var express = require('express');
 var bodyParser = require('body-parser');
-var multer  = require('multer')
-
-var upload = multer({ dest: '/tmp/' });
+var multer = require('multer')
 
 var app = express();
 
 function logRequest(req) {
-  var ip = req.headers['x-forwarded-for'] ||
-           req.connection.remoteAddress;
-  var message = 'Received request [' + req.originalUrl + 
-              '] from [' + ip + ']';
+    var ip = req.headers['x-forwarded-for'] ||
+        req.connection.remoteAddress;
+    var message = 'Received request [' + req.originalUrl +
+        '] from [' + ip + ']';
 
-  if (debug_mode) {
-    message += ' with payload [' + JSON.stringify(req.body) + ']';
-  } else {
-    message += '.';
-  }
-  console.log(message);
+    if (debug_mode) {
+        message += ' with payload [' + JSON.stringify(req.body) + ']';
+    } else {
+        message += '.';
+    }
+    console.log(message);
 }
 
-var client  = mqtt.connect(mqtt_host, {
-  clientId: 'test',
-  username: mqtt_user,
-  password: mqtt_pass
+var client = mqtt.connect(mqtt_host, {
+    clientId: 'test',
+    username: mqtt_user,
+    password: mqtt_pass
 });
 
 app.set('port', http_port);
 app.use(bodyParser.json());
 
-app.get('/keep_alive/', function(req, res) {
-  logRequest(req);
-  client.publish(keep_alive_topic, keep_alive_message);
-  res.send('ok');
+app.get('/keep_alive/', function (req, res) {
+    logRequest(req);
+    client.publish(keep_alive_topic, keep_alive_message);
+    res.sendStatus(200);
 });
 
-app.post('/publish', upload.single('thumb'), function (req, res) {
+app.post('/publish', function (req, res, next) {
+    if (req.query.single) {
+        var upload = multer().single(req.query.single);
+
+        upload(req, res, next);
+    }
+    else {
+        next();
+    }
+});
+
+app.post('/publish', function (req, res) {
     logRequest(req);
 
     var topic = req.query.topic;
 
     if (!topic) {
-        res.send('error');
+        res.status(500).send('Topic not specified');
     }
     else {
         var message = req.body.payload;
 
         client.publish(topic, message);
 
-        res.send('ok');
+        res.sendStatus(200);
     }
 });
 
-app.post('/post/', function(req, res) {
-  logRequest(req);
-  if (!auth_key || req.body['key'] != auth_key) {
-    console.log('Request is not authorized.');
-    res.send();
-    return;
-  }
-  
-  if (req.body['topic']) {
-    client.publish(req.body['topic'], req.body['message']);
-    res.send('ok');
-  } else {
-    res.send('error');
-  }
+app.post('/post/', function (req, res) {
+    logRequest(req);
+    if (!auth_key || req.body['key'] != auth_key) {
+        console.log('Request is not authorized.');
+        res.sendStatus(401);
+        return;
+    }
+
+    if (req.body['topic']) {
+        client.publish(req.body['topic'], req.body['message']);
+        res.sendStatus(200);
+    } else {
+        res.status(500).send('Topic not specified');
+    }
 });
 
-app.listen(app.get('port'), function() {
-  console.log('Node app is running on port', app.get('port'));
+app.listen(app.get('port'), function () {
+    console.log('Node app is running on port', app.get('port'));
 });
