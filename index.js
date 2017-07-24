@@ -37,13 +37,17 @@ var client = mqtt.connect(mqtt_host, {
 app.set('port', http_port);
 app.use(bodyParser.json());
 
-app.get('/keep_alive/', function (req, res) {
-    logRequest(req);
-    client.publish(keep_alive_topic, keep_alive_message);
-    res.sendStatus(200);
-});
+function authorizeUser(req, res, next) {
+    if (!auth_key || req.body['key'] != auth_key) {
+        console.log('Request is not authorized.');
+        res.sendStatus(401);
+    }
+    else {
+        next();
+    }
+}
 
-app.post('/publish', function (req, res, next) {
+function checkSingleFileUpload(req, res, next) {
     console.log('checking for single...')
     if (req.query.single) {
         console.log('Single == ' + req.query.single)
@@ -55,9 +59,9 @@ app.post('/publish', function (req, res, next) {
         console.log('No Single')
         next();
     }
-});
+}
 
-app.post('/publish', function (req, res, next) {
+function checkMessagePath(req, res, next) {
     console.log('checking for message path...')
     if (req.query.path) {
         console.log('Path == ' + req.query.path)
@@ -67,9 +71,15 @@ app.post('/publish', function (req, res, next) {
         console.log('No Path')
     }
     next();
+}
+
+app.get('/keep_alive/', function (req, res) {
+    logRequest(req);
+    client.publish(keep_alive_topic, keep_alive_message);
+    res.sendStatus(200);
 });
 
-app.post('/publish', function (req, res) {
+app.post('/publish', authorizeUser, checkSingleFileUpload, checkMessagePath, function (req, res) {
     logRequest(req);
 
     var topic = req.query.topic;
@@ -78,7 +88,7 @@ app.post('/publish', function (req, res) {
         res.status(500).send('Topic not specified');
     }
     else {
-        var message = req.body.payload;
+        var message = req.body;
 
         client.publish(topic, message);
 
@@ -86,19 +96,15 @@ app.post('/publish', function (req, res) {
     }
 });
 
-app.post('/post/', function (req, res) {
+app.post('/post/', authorizeUser, function (req, res) {
     logRequest(req);
-    if (!auth_key || req.body['key'] != auth_key) {
-        console.log('Request is not authorized.');
-        res.sendStatus(401);
-        return;
-    }
 
-    if (req.body['topic']) {
+    if (!req.body['topic']) {
+        res.status(500).send('Topic not specified');
+    }
+    else {
         client.publish(req.body['topic'], req.body['message']);
         res.sendStatus(200);
-    } else {
-        res.status(500).send('Topic not specified');
     }
 });
 
