@@ -44,12 +44,15 @@ app.get('/keep_alive/', function (req, res) {
 });
 
 app.post('/publish', function (req, res, next) {
+    console.log('checking for single...')
     if (req.query.single) {
+        console.log('Single == ' + req.query.single)
         var upload = multer().single(req.query.single);
 
         upload(req, res, next);
     }
     else {
+        console.log('No Single')
         next();
     }
 });
@@ -63,7 +66,7 @@ app.post('/publish', function (req, res) {
         res.status(500).send('Topic not specified');
     }
     else {
-        var message = req.body.payload;
+        var message = req.body;
 
         client.publish(topic, message);
 
