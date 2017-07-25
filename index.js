@@ -21,7 +21,7 @@ var multer = require('multer');
 
 var app = express();
 
-var mqttClient = (function getMqttClient () {
+function getMqttClient () {
 
     var options = {
         username: settings.mqtt.user,
@@ -33,7 +33,9 @@ var mqttClient = (function getMqttClient () {
     }
 
     return mqtt.connect(settings.mqtt.host, options);
-})();
+}
+
+var mqttClient = getMqttClient();
 
 app.set('port', settings.http_port);
 app.use(bodyParser.json());
@@ -118,17 +120,19 @@ app.get('/subscribe/', logRequest, authorizeUser, function (req, res) {
         res.status(500).send('topic not specified');
     }
     else {
-        
-        // get a new mqtt client
-        // so we dont constantly add listeners on the 'global' client
+        // get a new mqttClient
+        // so we dont constantly add listeners on the 'global' mqttClient
         var mqttClient = getMqttClient();
         
-        mqttClient.on('connect', function () { mqttClient.subscribe(topic); });
+        mqttClient.on('connect', function () { 
+            mqttClient.subscribe(topic); 
+        });
+
         mqttClient.on('message', function (t, m) {
-            if (t == topic) {
+            if (t === topic){
                 res.write(m);
             }
-        })
+        });
 
         req.on("close", function () {
             mqttClient.end();
