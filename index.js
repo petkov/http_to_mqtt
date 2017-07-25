@@ -92,7 +92,7 @@ function checkTopicQueryParameter(req, res, next) {
 }
 
 function ensureTopicSpecified(req, res, next) {
-    if (!body.topic) {
+    if (!req.body.topic) {
         res.status(500).send('Topic not specified');
     }
     else {
