@@ -3,7 +3,7 @@ var settings = {
         host: process.env.MQTT_HOST || '',
         user: process.env.MQTT_USER || '',
         password: process.env.MQTT_PASS || '',
-        clientId: process.env.MQTT_CLIENT_ID || null;
+        clientId: process.env.MQTT_CLIENT_ID || null
     },
     keepalive: {
         topic: process.env.KEEP_ALIVE_TOPIC || 'keep_alive',
