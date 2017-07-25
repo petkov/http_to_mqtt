@@ -21,7 +21,7 @@ var multer = require('multer');
 
 var app = express();
 
-function getMqttClient () {
+function getMqttClient() {
 
     var options = {
         username: settings.mqtt.user,
@@ -123,13 +123,13 @@ app.get('/subscribe/', logRequest, authorizeUser, function (req, res) {
         // get a new mqttClient
         // so we dont constantly add listeners on the 'global' mqttClient
         var mqttClient = getMqttClient();
-        
-        mqttClient.on('connect', function () { 
-            mqttClient.subscribe(topic); 
+
+        mqttClient.on('connect', function () {
+            mqttClient.subscribe(topic);
         });
 
         mqttClient.on('message', function (t, m) {
-            if (t === topic){
+            if (t === topic) {
                 res.write(m);
             }
         });
