@@ -154,7 +154,7 @@ function ensureTopicSpecified(req, res, next) {
 }
 
 app.get('/keep_alive/', logRequest, function (req, res) {
-    client.publish(settings.keepalive.topic, settings.keepalive.message);
+    mqttClient.publish(settings.keepalive.topic, settings.keepalive.message);
     res.sendStatus(200);
 });
 
