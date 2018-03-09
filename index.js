@@ -3,7 +3,8 @@ var settings = {
         host: process.env.MQTT_HOST || '',
         user: process.env.MQTT_USER || '',
         password: process.env.MQTT_PASS || '',
-        clientId: process.env.MQTT_CLIENT_ID || null
+        clientId: process.env.MQTT_CLIENT_ID || null,
+        protocol: process.env.MQTT_PROTOCOL || 'mqtt'
     },
     keepalive: {
         topic: process.env.KEEP_ALIVE_TOPIC || 'keep_alive',
@@ -74,7 +75,8 @@ function getMqttClient() {
 
     var options = {
         username: settings.mqtt.user,
-        password: settings.mqtt.password
+        password: settings.mqtt.password,
+        protocol: settings.mqtt.protocol
     };
 
     if (settings.mqtt.clientId) {
