@@ -85,33 +85,34 @@ function checkMessagePathQueryParameter(req, res, next) {
 }
 
 function checkTopicQueryParameter(req, res, next) {
-
     if (req.query.topic) {
         req.body.topic = req.query.topic;
     }
-
     next();
 }
 
-
 function checkQoSParameter(req,res,next){
-
-  if(!req.body.qos){
-    req.body.qos=0
+  if (req.body.qos){
+    req.body.qos = 0;
+    next();
   }
-  if( 0 > parseInt(req.body.qos, 10) || parseInt(req.body.qos, 10)  >2){
-    res.status(400).send("QoS range is not in range 0-2")
+  else {
+    let qos = parseInt(req.body.qos, 10);
+    if (qos < 0 || qos > 2){
+      res.status(400).send("QoS range is not in range 0-2");
   }
-  next();
+  else {
+    next();
+  }
+}
 }
 
 
 function checkRetainFlag(req,res,next){
-
   if(!req.body.retain){
     req.body.retain=false;
   }
-  req.body.retain=JSON.parse(req.body.retain)
+  req.body.retain=!!req.body.retain
   next();
 }
 function ensureTopicSpecified(req, res, next) {
@@ -129,7 +130,11 @@ app.get('/keep_alive/', logRequest, function (req, res) {
 });
 
 app.post('/post/', logRequest, authorizeUser, checkSingleFileUpload, checkMessagePathQueryParameter, checkTopicQueryParameter,checkQoSParameter,checkRetainFlag, ensureTopicSpecified, function (req, res) {
-    mqttClient.publish(req.body['topic'], req.body['message'],req.body['qos'],req.body['retain']);
+    let options = {
+      qos : req.body.qos,
+      retain : req.body.retain == true
+    }
+    mqttClient.publish(req.body['topic'], req.body['message'], options);
     res.sendStatus(200);
 });
 
