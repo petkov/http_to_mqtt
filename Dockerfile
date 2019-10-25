@@ -1,5 +1,5 @@
 # Set the base image
-FROM hypriot/rpi-node
+FROM node:alpine
 
 # File Author / Maintainer
 MAINTAINER Vilius Simonaitis
