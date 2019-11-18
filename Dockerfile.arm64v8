@@ -7,6 +7,9 @@ RUN apk add curl && curl -L ${QEMU_URL} | tar zxvf - -C . --strip-components 1
 # Set the base image
 FROM arm64v8/node:alpine
 
+# Add QEMU
+COPY --from=builder qemu-arm-static /usr/bin
+
 # File Author / Maintainer
 MAINTAINER Vilius Simonaitis
 
