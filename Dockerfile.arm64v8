@@ -28,8 +28,8 @@ EXPOSE 5000
 # Set the default directory where CMD will execute
 WORKDIR /http_to_mqtt
 
-RUN npm install --production
+RUN npm install --production --quiet
 
 # Set the default command to execute 
-CMD node index.js 
+CMD ["npm", "start"]
 
