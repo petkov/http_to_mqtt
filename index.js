@@ -57,7 +57,7 @@ function logRequest(req, res, next) {
 }
 
 function authorizeUser(req, res, next) {
-    if (settings.auth_key && req.body['key'] != settings.auth_key) {
+    if (settings.auth_key && req.body['key'] != settings.auth_key && req.query['key'] != settings.auth_key) {
         console.log('Request is not authorized.');
         res.sendStatus(401);
     }
@@ -75,6 +75,14 @@ function checkSingleFileUpload(req, res, next) {
     else {
         next();
     }
+}
+
+
+function checkQueryMessagePathQueryParameter(req, res, next) {
+    if (req.query.path) {
+        req.query.message = req.query[req.query.path];
+    }
+    next();
 }
 
 function checkMessagePathQueryParameter(req, res, next) {
@@ -102,13 +110,33 @@ function ensureTopicSpecified(req, res, next) {
     }
 }
 
+function ensureQueryTopicSpecified(req, res, next) {
+    if (!req.query.topic) {
+        res.status(500).send('Topic not specified');
+    }
+    else {
+        next();
+    }
+}
+
+function publishToMqttServerCallback(content) {
+    if(content) {
+        console.log(content);
+    }
+}
+
 app.get('/keep_alive/', logRequest, function (req, res) {
     mqttClient.publish(settings.keepalive.topic, settings.keepalive.message);
     res.sendStatus(200);
 });
 
 app.post('/post/', logRequest, authorizeUser, checkSingleFileUpload, checkMessagePathQueryParameter, checkTopicQueryParameter, ensureTopicSpecified, function (req, res) {
-    mqttClient.publish(req.body['topic'], req.body['message']);
+    mqttClient.publish(req.body['topic'], req.body['message'], publishToMqttServerCallback);
+    res.sendStatus(200);
+});
+
+app.post('/publish_by_uri/', logRequest, authorizeUser, checkSingleFileUpload, checkQueryMessagePathQueryParameter, ensureQueryTopicSpecified, function (req, res) {
+    mqttClient.publish(req.query['topic'], req.query['message'], publishToMqttServerCallback);
     res.sendStatus(200);
 });
 
