@@ -3,7 +3,8 @@ var settings = {
         host: process.env.MQTT_HOST || '',
         user: process.env.MQTT_USER || '',
         password: process.env.MQTT_PASS || '',
-        clientId: process.env.MQTT_CLIENT_ID || null
+        clientId: process.env.MQTT_CLIENT_ID || null,
+        protocol: process.env.MQTT_PROTOCOL || 'mqtt'
     },
     keepalive: {
         topic: process.env.KEEP_ALIVE_TOPIC || 'keep_alive',
@@ -12,7 +13,56 @@ var settings = {
     debug: process.env.DEBUG_MODE || false,
     auth_key: process.env.AUTH_KEY || '',
     http_port: process.env.PORT || 5000
-}
+};
+
+(function (args) {
+    function printUsage(errorMessage) {
+        if (errorMessage)
+            console.error(errorMessage);
+
+        console.log('Usage: npm start -- [options]');
+        console.log('');
+        console.log('Options:');
+        console.log("\t-c config.json\t load configuration from JSON file");
+        console.log("\t---help\t\t print usage and exit");
+    }
+
+    function merge(target, source) {
+        for (key in source) {
+            if (typeof source[key] === 'object') {
+                if (!target[key]) {
+                    target[key] = {};
+                }
+
+                merge(target[key], source[key]);
+            }
+            else {
+                target[key] = source[key];
+            }
+        }
+    }
+    
+    // start with i = 2.  0 == node executable, 1 == index.js (this script)
+    for (var i = 2; i < args.length; ++i) {
+        switch (args[i]) {
+            case '-c':
+                ++i;
+                var config = require(args[i]);
+
+                merge(settings, config);
+                break;
+            case '--help':
+                printUsage();
+                process.exit();
+                break;
+            default:
+                printUsage("unknown option specified: " + args[i]);
+                process.exit(1);
+                break;
+        }
+    }
+
+})(process.argv);
 
 var mqtt = require('mqtt');
 var express = require('express');
@@ -25,7 +75,8 @@ function getMqttClient() {
 
     var options = {
         username: settings.mqtt.user,
-        password: settings.mqtt.password
+        password: settings.mqtt.password,
+        protocol: settings.mqtt.protocol
     };
 
     if (settings.mqtt.clientId) {

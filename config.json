@@ -1,0 +1,12 @@
+{
+    "mqtt": {
+        "host": "localhost"
+    },
+    "keepalive": {
+        "topic": "keep_alive",
+        "message": "keep_alive"
+    },
+    "debug": false,
+    "auth_key": null,
+    "http_port": 5000
+}
